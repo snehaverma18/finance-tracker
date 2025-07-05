@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Finance Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gradient-to-br from-gray-100 to-blue-100 min-h-screen p-6">
+
+  <!-- Header -->
+  <header class="mb-8 text-center">
+    <h1 class="text-4xl font-bold text-blue-800 mb-2">💰 Personal Finance Dashboard</h1>
+    <p class="text-gray-600 text-lg">Track, analyze, and stay on top of your spending!</p>
+  </header>
+
+  <!-- Add Transaction Form -->
+  <div class="max-w-3xl mx-auto bg-white rounded-2xl shadow-lg p-6 mb-10">
+    <h2 class="text-2xl font-semibold mb-4 text-blue-700">➕ Add a New Transaction</h2>
+    <form action="/add-transaction" method="POST" class="space-y-4">
+      <input name="description" placeholder="Description" required
+        class="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" />
+      <input name="amount" type="number" step="0.01" placeholder="Amount" required
+        class="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" />
+      <input name="date" type="date" required
+        class="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" />
+      <button type="submit"
+        class="bg-blue-600 hover:bg-blue-700 transition text-white font-semibold px-6 py-3 rounded-lg shadow">
+        Add Transaction
+      </button>
+    </form>
+  </div>
+
+  <!-- Transaction List -->
+  <div class="max-w-3xl mx-auto bg-white rounded-2xl shadow-lg p-6 mb-10">
+    <h2 class="text-2xl font-semibold mb-4 text-blue-700">📋 Your Transactions</h2>
+
+    <% if (transactions.length > 0) { %>
+      <ul class="divide-y divide-gray-200">
+        <% transactions.forEach(tx => { %>
+          <li class="flex justify-between items-center py-3">
+            <div>
+              <p class="font-medium text-gray-800"><%= tx.description %></p>
+              <p class="text-sm text-gray-500">₹<%= tx.amount %> on <%= new Date(tx.date).toLocaleDateString() %></p>
+            </div>
+            <div class="flex gap-4">
+              <a href="/edit-transaction/<%= tx._id %>" class="text-blue-600 hover:underline">Edit</a>
+              <form action="/delete-transaction/<%= tx._id %>" method="POST">
+                <button type="submit" class="text-red-600 hover:underline">Delete</button>
+              </form>
+            </div>
+          </li>
+        <% }) %>
+      </ul>
+    <% } else { %>
+      <p class="text-gray-500 italic text-center">No transactions to show yet.</p>
+    <% } %>
+  </div>
+
+  <!-- Monthly Expense Chart -->
+  <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-6">
+    <h2 class="text-2xl font-semibold mb-4 text-blue-700">📊 Monthly Expense Overview</h2>
+    <canvas id="expenseChart" height="120"></canvas>
+  </div>
+
+  <!-- Chart Script -->
+  <script>
+    const labels = JSON.parse('<%- labels %>');
+    const data = JSON.parse('<%- data %>');
+
+    const ctx = document.getElementById("expenseChart").getContext("2d");
+
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: "Total Expenses (₹)",
+          data: data,
+          backgroundColor: 'rgba(59, 130, 246, 0.6)',
+          borderColor: 'rgba(59, 130, 246, 1)',
+          borderWidth: 1,
+          barPercentage: 0.4,
+          categoryPercentage: 0.6
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            labels: {
+              font: {
+                size: 14
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              stepSize: 500
+            },
+            title: {
+              display: true,
+              text: "₹ Rupees",
+              font: { size: 14 }
+            }
+          },
+          x: {
+            title: {
+              display: true,
+              text: "Month",
+              font: { size: 14 }
+            }
+          }
+        }
+      }
+    });
+  </script>
+
+</body>
+</html>
